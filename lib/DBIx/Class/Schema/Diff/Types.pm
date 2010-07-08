@@ -18,7 +18,7 @@ use MooseX::Types::Moose ':all';
 use MooseX::Types -declare => [qw/ Source /];
 
 my $generated = 0;
-sub _generated_classname { "DBIx::Class::Schema::GENERATED" .(++$generated) }
+sub _generated_classname { 'GEN' .(++$generated) .'::Schema' }
 
 subtype Source, as Object, where {
     blessed $_ and 'DBIx::Class::Schema::Diff::Source' eq blessed $_;
