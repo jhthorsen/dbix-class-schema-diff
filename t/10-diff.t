@@ -20,13 +20,14 @@ ok($diff, 'Created diff object') or BAIL_OUT $@;
 ok($diff->create_ddl_dir('t/output'), 'Wrote diff to t/output') or diag $diff->error;
 
 {
-    open my $GENERATED, '<', 't/output/users.sql' or BAIL_OUT $!;
-    open my $EXPECTED, '<', 't/output/expected-users.sql' or BAIL_OUT $!;
+    open my $GENERATED, '<', 't/output/TestApp-Schema-0-1.0-SQLite.sql' or BAIL_OUT $!;
+    open my $EXPECTED, '<', 't/output/expected-0-1.0-SQLite.sql' or BAIL_OUT $!;
 
     my $n = 0;
 
     LINE:
     while(my $generated = readline $GENERATED) {
+        next LINE unless($generated =~ /^\w/);
         my $expected = readline $EXPECTED;
         $expected = '................' unless(defined $expected);
 
@@ -38,5 +39,9 @@ ok($diff->create_ddl_dir('t/output'), 'Wrote diff to t/output') or diag $diff->e
         $n++;
     }
 
-    is($n, 10, 'Expected diff is ok');
+    is($n, 3, 'Expected diff is ok');
 }
+
+unlink 't/output/TestApp-Schema-0-1.0-SQLite.sql';
+unlink 't/output/GEN1-Schema-0-SQLite.sql';
+unlink 't/output/TestApp-Schema-1.0-SQLite.sql';

@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE users ADD COLUMN name varchar NOT NULL;
+COMMIT;

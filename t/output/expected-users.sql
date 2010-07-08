@@ -1,2 +1,0 @@
----
-some expected sqlite diff
