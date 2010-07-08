@@ -71,13 +71,14 @@ sub create_ddl_dir {
     # ...
 }
 
-=head1 BUGS
-
 =head1 COPYRIGHT & LICENSE
+
+This library is free software. You can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-See L<DBIx::Class::Schema::Diff>.
+Jan Henning Thorsen C<< jhthorsen at cpan.org >>
 
 =cut
 

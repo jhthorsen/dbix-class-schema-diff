@@ -37,8 +37,10 @@ METHODS
     Will write the diff between "from" and "to" to a selected directory -
     one file per table.
 
-BUGS
 COPYRIGHT & LICENSE
+    This library is free software. You can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
 AUTHOR
-    See DBIx::Class::Schema::Diff.
+    Jan Henning Thorsen "jhthorsen at cpan.org"
 
