@@ -1,0 +1,38 @@
+NAME
+    DBIx::Class::Schema::Diff - Diff two schemas, regardless of version
+    numbers
+
+VERSION
+    0.00
+
+DESCRIPTION
+SYNOPSIS
+        use DBIx::Class::Schema::Diff;
+
+        my $diff = DBIx::Class::Schema::Diff->new(
+                        from => $dsn,
+                        to => 'MyApp::Schema',
+                    );
+
+        # write diff to disk
+        $diff->create_ddl_dir($path);
+
+ATTRIBUTES
+  from
+    Any source (module name, dbh or dsn) which has the old version of the
+    schema.
+
+  to
+    Any source (module name, dbh or dsn) which has the new version of the
+    schema.
+
+METHODS
+  create_ddl_dir
+    Will write the diff between "from" and "to" to a selected directory -
+    one file per table.
+
+BUGS
+COPYRIGHT & LICENSE
+AUTHOR
+    See DBIx::Class::Schema::Diff.
+
