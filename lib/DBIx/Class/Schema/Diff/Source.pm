@@ -43,7 +43,7 @@ has sqltranslator => (
     lazy_build => 1,
     handles => {
         reset => 'reset',
-        producer => 'producer',
+        schema => 'schema',
     },
 );
 
@@ -53,6 +53,7 @@ sub _build_sqltranslator {
         ignore_constraint_names => 1,
         ignore_index_names => 1,
         parser => 'SQL::Translator::Parser::DBIx::Class',
+        producer => $_[0]->producer,
         # more args...?
     );
 }
@@ -86,7 +87,21 @@ sub _build_version {
 
 =head2 producer
 
-Proxy for L<SQL::Translator::producer()>.
+Alias for L<SQL::Translator::producer()>, but will always return the
+producer as a string.
+
+=cut
+
+has producer => (
+    is => 'rw',
+    isa => 'Str',
+    default => 'SQLite',
+    trigger => sub { $_[0]->sqltranslator->producer($_[1]) },
+);
+
+=head2 schema
+
+Proxy for L<SQL::Translator::schema()>.
 
 =head2 error
 
@@ -167,14 +182,19 @@ attribute by default.
 
 sub schema_to_file {
     my $self = shift;
-    my $file = shift || $self->filename or return;
+    my $file = shift or return;
     my $text = $self->translate or return;
     my $OUT;
 
-    unless(open $OUT, '>', $file) {
-        $self->_set_error($!);
+    if(-d $file) {
+        $file = $self->filename($file) or return;
+    }
+    if(not open $OUT, '>', $file) {
+        $self->_set_error("Cannot write to ($file): $!");
         return;
     }
+
+    print $OUT $text;
 
     return 1;
 }
