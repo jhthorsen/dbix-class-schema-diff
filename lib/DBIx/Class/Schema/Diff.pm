@@ -10,6 +10,12 @@ DBIx::Class::Schema::Diff - Diff two schemas, regardless of version numbers
 
 =head1 DESCRIPTION
 
+    Is there a project which can check out two tags/commits from
+    git and make a diff between the two schemas? So instead of
+    having the version information in the database, I would like
+    to A) make a diff between database and the current checked out
+    version from the repo B) make a diff between two git-versions.
+
 =head1 SYNOPSIS
 
     use DBIx::Class::Schema::Diff;
