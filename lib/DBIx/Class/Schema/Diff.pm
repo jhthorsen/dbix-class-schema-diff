@@ -64,6 +64,19 @@ has to => (
     documentation => 'Source with new schema information (module name or dsn)',
 );
 
+=head2 sql_language
+
+Which SQL language the output files should be in.
+
+=cut
+
+has sql_language => (
+    is => 'ro',
+    isa => 'ArrayRef',
+    documentation => 'MySQL, SQLite, PostgreSQL, ....',
+    default => sub { ['SQLite'] },
+);
+
 =head1 METHODS
 
 =head2 create_ddl_dir
