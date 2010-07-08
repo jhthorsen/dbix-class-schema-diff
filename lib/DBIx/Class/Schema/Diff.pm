@@ -77,6 +77,19 @@ has databases => (
     default => sub { ['SQLite'] },
 );
 
+=head2 error
+
+Holds the last error.
+
+=cut
+
+has error => (
+    is => 'ro',
+    isa => 'Str',
+    writer => '_set_error',
+    default => '',
+);
+
 =head1 METHODS
 
 =head2 create_ddl_dir
@@ -88,8 +101,33 @@ one file per table.
 
 sub create_ddl_dir {
     my $self = shift;
+    my $dump_dir = shift;
+    my $from = $self->from;
+    my $to = $self->to;
 
-    # ...
+    if($to->version == $from->version) {
+        $self->_set_error('"to" and "from" version is the same');
+        return;
+    }
+
+    DB:
+    for my $db (@{ $self->databases }) {
+
+        SOURCE:
+        for my $source ($from, $to) {
+            $source->reset;
+            $source->producer($db);
+
+            unless($source->schema_to_file) {
+                $self->_set_error($source->error);
+                return;
+            }
+        }
+
+        # do diff...
+    }
+
+    return 1;
 }
 
 =head1 COPYRIGHT & LICENSE

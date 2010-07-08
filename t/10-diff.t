@@ -17,7 +17,7 @@ my $diff = eval {
 };
 
 ok($diff, 'Created diff object') or BAIL_OUT $@;
-ok($diff->create_ddl_dir('t/output'), 'Wrote diff to t/output');
+ok($diff->create_ddl_dir('t/output'), 'Wrote diff to t/output') or diag $diff->error;
 
 {
     open my $GENERATED, '<', 't/output/users.sql' or BAIL_OUT $!;
