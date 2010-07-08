@@ -32,9 +32,8 @@ DBIx::Class::Schema::Diff - Diff two schemas, regardless of version numbers
 =cut
 
 use DBIx::Class;
-use SQL::Translator;
 use SQL::Translator::Diff;
-use DBIx::Class::Schema::Diff::Types qw/ DBICObject /;
+use DBIx::Class::Schema::Diff::Types qw/ Source /;
 use Moose;
 
 =head1 ATTRIBUTES
@@ -47,7 +46,7 @@ Any source (module name, dbh or dsn) which has the old version of the schema.
 
 has from => (
     is => 'ro',
-    isa => DBICObject,
+    isa => Source,
     coerce => 1,
     documentation => 'Source with old schema information (module name or dsn)',
 );
@@ -60,7 +59,7 @@ Any source (module name, dbh or dsn) which has the new version of the schema.
 
 has to => (
     is => 'ro',
-    isa => DBICObject,
+    isa => Source,
     coerce => 1,
     documentation => 'Source with new schema information (module name or dsn)',
 );
