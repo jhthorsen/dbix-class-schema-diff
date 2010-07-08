@@ -117,7 +117,7 @@ sub translate {
     my $text = $self->sqltranslator->translate({ data => $self->class });
 
     unless($text) {
-        $self->_set_error($self->sqltranslator->error);
+        $self->_set_error('SQL::Translator failed: ' .$self->sqltranslator->error);
         return;
     }
 
@@ -126,28 +126,39 @@ sub translate {
 
 =head2 filename
 
-    $path = $self->filename($database, $directory);
+    $path = $self->filename($directory);
+    $path = $self->filename($directory, $preversion);
 
-Returns a filename, relative to the C<$database> type and L<$directory>.
+Returns a filename relative to the given L<$directory>.
 
 =cut
 
 sub filename {
-    my($self, $database, $directory) = @_;
+    my $self = shift;
+    my $directory = shift;
+    my $preversion = shift;
     my $class = $self->class;
+    my $version = $self->version;
+    my($obj, $filename);
 
     unless($class->can('ddl_filename')) {
         $self->_set_error("$class cannot ddl_filename()");
         return;
     }
 
-    return $self->class->ddl_filename($database, $self->version, $directory);
+    # ddl_filename() does ref($obj) to find filename
+    $obj = bless {}, $class;
+
+    $filename = $obj->ddl_filename($self->producer, $version, $directory);
+    $filename =~ s/$version/$preversion\-$version/ if(defined $preversion);
+
+    return $filename;
 }
 
 =head2 schema_to_file
 
     $bool = $self->schema_to_file($filename);
-    $bool = $self->schema_to_file;
+    $bool = $self->schema_to_file($directory);
 
 Will dump schema as SQL to a given C<$filename> or use the L</filename>
 attribute by default.

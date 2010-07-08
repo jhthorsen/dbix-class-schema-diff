@@ -112,19 +112,38 @@ sub create_ddl_dir {
 
     DB:
     for my $db (@{ $self->databases }) {
+        my($diff_obj, $diff_text);
 
         SOURCE:
         for my $source ($from, $to) {
-            $source->reset;
-            $source->producer($db);
+            my $old_producer = $source->producer;
+            my $file = $source->filename($dump_dir);
 
-            unless($source->schema_to_file) {
+            $source->producer($db);
+            $source->reset;
+
+            unless($source->schema_to_file($file)) {
                 $self->_set_error($source->error);
                 return;
             }
+
+            $source->producer($old_producer);
         }
 
-        # do diff...
+        $diff_obj = SQL::Translator::Diff->new({
+                        output_db => $db,
+                        source_schema => $self->from->schema,
+                        target_schema => $self->to->schema,
+                    });
+
+        eval {
+            $diff_text = $diff_obj->compute_differences->produce_diff_sql;
+            open my $DIFF, '>', $to->filename($dump_dir, $from->version) or die $!;
+            print $DIFF $diff_text or die $!;
+        } or do {
+            $self->_set_error($@);
+            return;
+        };
     }
 
     return 1;
