@@ -23,6 +23,7 @@ DBIx::Class::Schema::Diff - Diff two schemas, regardless of version numbers
     my $diff = DBIx::Class::Schema::Diff->new(
                     from => $dsn,
                     to => 'MyApp::Schema',
+                    databases => ['SQLite'],
                 );
 
     # write diff to disk
@@ -64,13 +65,13 @@ has to => (
     documentation => 'Source with new schema information (module name or dsn)',
 );
 
-=head2 sql_language
+=head2 databases
 
 Which SQL language the output files should be in.
 
 =cut
 
-has sql_language => (
+has databases => (
     is => 'ro',
     isa => 'ArrayRef',
     documentation => 'MySQL, SQLite, PostgreSQL, ....',
