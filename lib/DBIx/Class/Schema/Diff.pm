@@ -43,6 +43,7 @@ Any source (module name, dbh or dsn) which has the old version of the schema.
 has from => (
     is => 'ro',
     isa => 'Any',
+    documentation => 'Source with old schema information (module name or dsn)',
 );
 
 =head2 to
@@ -54,6 +55,7 @@ Any source (module name, dbh or dsn) which has the new version of the schema.
 has to => (
     is => 'ro',
     isa => 'Any',
+    documentation => 'Source with new schema information (module name or dsn)',
 );
 
 =head1 METHODS
