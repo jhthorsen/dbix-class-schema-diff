@@ -186,7 +186,7 @@ sub schema_to_file {
     my $text = $self->translate or return;
     my $OUT;
 
-    if(-d $file) {
+    if(ref $file eq '' and -d $file) {
         $file = $self->filename($file) or return;
     }
     if(not open $OUT, '>', $file) {

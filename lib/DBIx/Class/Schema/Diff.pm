@@ -26,11 +26,14 @@ DBIx::Class::Schema::Diff - Diff two schemas, regardless of version numbers
                     databases => ['SQLite'],
                 );
 
-    # write diff to disk
-    $diff->create_ddl_dir($path);
+    # write "diff", "to" and "from" to disk
+    $diff->diff_ddl($directory) or die $diff->error;
+    $diff->to_ddl($directory) or die $diff->error;
+    $diff->from_ddl($directory) or die $diff->error;
 
 =cut
 
+use File::Temp ();
 use DBIx::Class;
 use SQL::Translator::Diff;
 use DBIx::Class::Schema::Diff::Types qw/ Source /;
@@ -71,7 +74,7 @@ Which SQL language the output files should be in.
 =cut
 
 has databases => (
-    is => 'ro',
+    is => 'rw',
     isa => 'ArrayRef',
     documentation => 'MySQL, SQLite, PostgreSQL, ....',
     default => sub { ['SQLite'] },
@@ -92,37 +95,48 @@ has error => (
 
 =head1 METHODS
 
-=head2 create_ddl_dir
+=head2 diff_ddl
 
-Will write the diff between L</from> and L</to> to a selected directory -
-one file per table.
+    $bool = $self->diff_ddl($directory, \%args);
+    $bool = $self->diff_ddl(\$text, \%args);
+
+Will write the diff (one file per each type in L</databases>) between
+L</from> and L</to> to a selected C<$directory>. C<%args> is passed
+on to L<SQL::Translator::Diff::new()>, but "output_db", "source_schema"
+and "target_schema" is set by this method.
+
+Will write DDL to C<$text> if it is given as a scalar reference. (This
+might not make much sense, if you have more than one type defined in
+L</databases>.
 
 =cut
 
-sub create_ddl_dir {
+sub diff_ddl {
     my $self = shift;
-    my $dump_dir = shift;
+    my $directory = shift;
+    my $args = shift || {};
     my $from = $self->from;
     my $to = $self->to;
+    my @tmp_files;
 
     if($to->version == $from->version) {
         $self->_set_error('"to" and "from" version is the same');
         return;
     }
 
-    DB:
     for my $db (@{ $self->databases }) {
+        my $file = ref $directory eq 'SCALAR' ? $directory : $to->filename($directory, $from->version);
         my($diff_obj, $diff_text);
 
         SOURCE:
         for my $source ($from, $to) {
             my $old_producer = $source->producer;
-            my $file = $source->filename($dump_dir);
+            push @tmp_files, File::Temp->new;
 
             $source->producer($db);
             $source->reset;
 
-            unless($source->schema_to_file($file)) {
+            unless($source->schema_to_file($tmp_files[-1])) {
                 $self->_set_error($source->error);
                 return;
             }
@@ -131,6 +145,7 @@ sub create_ddl_dir {
         }
 
         $diff_obj = SQL::Translator::Diff->new({
+                        %$args,
                         output_db => $db,
                         source_schema => $self->from->schema,
                         target_schema => $self->to->schema,
@@ -138,7 +153,7 @@ sub create_ddl_dir {
 
         eval {
             $diff_text = $diff_obj->compute_differences->produce_diff_sql;
-            open my $DIFF, '>', $to->filename($dump_dir, $from->version) or die $!;
+            open my $DIFF, '>', $file or die $!;
             print $DIFF $diff_text or die $!;
         } or do {
             $self->_set_error($@);
@@ -146,6 +161,52 @@ sub create_ddl_dir {
         };
     }
 
+    return 1;
+}
+
+=head2 from_ddl
+
+=head2 to_ddl
+
+    $bool = $self->from_ddl($directory);
+    $bool = $self->from_ddl(\$text);
+    $bool = $self->to_ddl($directory);
+    $bool = $self->to_ddl(\$text);
+
+Will write L</from> or L</to> schemas as DDL to the given directory,
+with all the languages defined in L</databases>.
+
+Will write DDL to C<$text> if it is given as a scalar reference. (This
+might not make much sense, if you have more than one type defined in
+L</databases>.
+
+=cut
+
+sub from_ddl { shift->_ddl(from => @_) }
+sub to_ddl { shift->_ddl(to => @_) }
+
+sub _ddl {
+    my $self = shift;
+    my $attr_name = shift;
+    my $directory = shift;
+    my $args = shift || {};
+ 
+    for my $db (@{ $self->databases }) {
+        my $source = $self->$attr_name;
+        my $file = ref $directory eq 'SCALAR' ? $directory : $source->filename($directory);
+        my $old_producer = $source->producer;
+
+        $source->reset;
+        $source->producer($db);
+
+        unless($source->schema_to_file($file)) {
+            $self->_set_error($source->error);
+            return;
+        }
+
+        $source->producer($old_producer);
+    }
+    
     return 1;
 }
 

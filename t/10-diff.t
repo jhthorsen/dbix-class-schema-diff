@@ -5,7 +5,7 @@ use DBIx::Class::Schema::Diff;
 use Test::More;
 
 plan skip_all => 'Cannot run tests without DBD::SQLite' if ! eval "use DBD::SQLite; 1";
-plan tests => 4;
+plan tests => 10;
 
 use_ok 'TestApp::Schema';
 
@@ -16,8 +16,8 @@ my $diff = eval {
     );
 };
 
-ok($diff, 'Created diff object') or BAIL_OUT $@;
-ok($diff->create_ddl_dir('t/output'), 'Wrote diff to t/output') or diag $diff->error;
+ok($diff, 'created diff object') or BAIL_OUT $@;
+ok($diff->diff_ddl('t/output'), 'wrote diff to t/output') or diag $diff->error;
 
 {
     open my $GENERATED, '<', 't/output/TestApp-Schema-0-1.0-SQLite.sql' or BAIL_OUT $!;
@@ -42,6 +42,19 @@ ok($diff->create_ddl_dir('t/output'), 'Wrote diff to t/output') or diag $diff->e
     is($n, 3, 'Expected diff is ok');
 }
 
+{
+    my $text;
+    $text = '';
+    ok($diff->diff_ddl(\$text), 'wrote "diff" to ref') or diag $diff->error;
+    like($text, qr{ADD COLUMN name}, 'diff got ADD COLUMN');
+
+    $text = '';
+    ok($diff->from_ddl(\$text), 'wrote "from" to ref') or diag $diff->error;
+    like($text, qr{username varchar NOT NULL\n\)}, 'diff only got "username"');
+
+    $text = '';
+    ok($diff->to_ddl(\$text), 'wrote "to" to ref') or diag $diff->error;
+    like($text, qr{username varchar NOT NULL,\n\s+name}, 'to has "username" and "name"');
+}
+
 unlink 't/output/TestApp-Schema-0-1.0-SQLite.sql';
-unlink 't/output/GEN1-Schema-0-SQLite.sql';
-unlink 't/output/TestApp-Schema-1.0-SQLite.sql';
