@@ -44,6 +44,7 @@ use Moose;
 =head2 from
 
 Any source (module name, dbh or dsn) which has the old version of the schema.
+This attribute can coerce. See L<DBIx::Class::Schema::Diff::Types> for details.
 
 =cut
 
@@ -57,6 +58,7 @@ has from => (
 =head2 to
 
 Any source (module name, dbh or dsn) which has the new version of the schema.
+This attribute can coerce. See L<DBIx::Class::Schema::Diff::Types> for details.
 
 =cut
 
