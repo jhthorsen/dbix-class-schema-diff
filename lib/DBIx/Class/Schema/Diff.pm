@@ -107,9 +107,9 @@ L</from> and L</to> to a selected C<$directory>. C<%args> is passed
 on to L<SQL::Translator::Diff::new()>, but "output_db", "source_schema"
 and "target_schema" is set by this method.
 
-Will write DDL to C<$text> if it is given as a scalar reference. (This
-might not make much sense, if you have more than one type defined in
-L</databases>.
+Will write DDL to C<$text> if given as a scalar reference. (This might
+not make much sense, if you have more than one type defined in
+L</databases>).
 
 =cut
 
