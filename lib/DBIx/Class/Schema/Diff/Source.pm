@@ -103,16 +103,16 @@ has producer => (
 
 Proxy for L<SQL::Translator::schema()>.
 
-=head2 error
+=head2 errstr
 
-Holds the last error after a method return false.
+Holds the last errstr after a method return false.
 
 =cut
 
-has error => (
+has errstr => (
     is => 'ro',
     isa => 'Str',
-    writer => '_set_error',
+    writer => '_set_errstr',
     default => '',
 );
 
@@ -123,7 +123,7 @@ has error => (
     $text = $self->translate;
 
 Will return generated SQL or undef if it fails to do so. Check
-L</error> if that is the case.
+L</errstr> if that is the case.
 
 =cut
 
@@ -132,7 +132,7 @@ sub translate {
     my $text = $self->sqltranslator->translate({ data => $self->class });
 
     unless($text) {
-        $self->_set_error('SQL::Translator failed: ' .$self->sqltranslator->error);
+        $self->_set_errstr('SQL::Translator failed: ' .$self->sqltranslator->error);
         return;
     }
 
@@ -157,7 +157,7 @@ sub filename {
     my($obj, $filename);
 
     unless($class->can('ddl_filename')) {
-        $self->_set_error("$class cannot ddl_filename()");
+        $self->_set_errstr("$class cannot ddl_filename()");
         return;
     }
 
@@ -190,7 +190,7 @@ sub schema_to_file {
         $file = $self->filename($file) or return;
     }
     if(not open $OUT, '>', $file) {
-        $self->_set_error("Cannot write to ($file): $!");
+        $self->_set_errstr("Cannot write to ($file): $!");
         return;
     }
 

@@ -27,9 +27,9 @@ DBIx::Class::Schema::Diff - Diff two schemas, regardless of version numbers
                 );
 
     # write "diff", "to" and "from" to disk
-    $diff->diff_ddl($directory) or die $diff->error;
-    $diff->to_ddl($directory) or die $diff->error;
-    $diff->from_ddl($directory) or die $diff->error;
+    $diff->diff_ddl($directory) or die $diff->errstr;
+    $diff->to_ddl($directory) or die $diff->errstr;
+    $diff->from_ddl($directory) or die $diff->errstr;
 
 =cut
 
@@ -82,16 +82,16 @@ has databases => (
     default => sub { ['SQLite'] },
 );
 
-=head2 error
+=head2 errstr
 
-Holds the last error.
+Holds the last error if any as a string.
 
 =cut
 
-has error => (
+has errstr => (
     is => 'ro',
     isa => 'Str',
-    writer => '_set_error',
+    writer => '_set_errstr',
     default => '',
 );
 
@@ -122,7 +122,7 @@ sub diff_ddl {
     my @tmp_files;
 
     if($to->version == $from->version) {
-        $self->_set_error('"to" and "from" version is the same');
+        $self->_set_errstr('"to" and "from" version is the same');
         return;
     }
 
@@ -139,7 +139,7 @@ sub diff_ddl {
             $source->reset;
 
             unless($source->schema_to_file($tmp_files[-1])) {
-                $self->_set_error($source->error);
+                $self->_set_errstr($source->errstr);
                 return;
             }
 
@@ -158,7 +158,7 @@ sub diff_ddl {
             open my $DIFF, '>', $file or die $!;
             print $DIFF $diff_text or die $!;
         } or do {
-            $self->_set_error($@);
+            $self->_set_errstr($@);
             return;
         };
     }
@@ -202,7 +202,7 @@ sub _ddl {
         $source->producer($db);
 
         unless($source->schema_to_file($file)) {
-            $self->_set_error($source->error);
+            $self->_set_errstr($source->errstr);
             return;
         }
 

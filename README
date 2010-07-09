@@ -22,9 +22,9 @@ SYNOPSIS
                     );
 
         # write "diff", "to" and "from" to disk
-        $diff->diff_ddl($directory) or die $diff->error;
-        $diff->to_ddl($directory) or die $diff->error;
-        $diff->from_ddl($directory) or die $diff->error;
+        $diff->diff_ddl($directory) or die $diff->errstr;
+        $diff->to_ddl($directory) or die $diff->errstr;
+        $diff->from_ddl($directory) or die $diff->errstr;
 
 ATTRIBUTES
   from
@@ -40,8 +40,8 @@ ATTRIBUTES
   databases
     Which SQL language the output files should be in.
 
-  error
-    Holds the last error.
+  errstr
+    Holds the last error if any as a string.
 
 METHODS
   diff_ddl
@@ -53,9 +53,8 @@ METHODS
     SQL::Translator::Diff::new(), but "output_db", "source_schema" and
     "target_schema" is set by this method.
 
-    Will write DDL to $text if it is given as a scalar reference. (This
-    might not make much sense, if you have more than one type defined in
-    "databases".
+    Will write DDL to $text if given as a scalar reference. (This might not
+    make much sense, if you have more than one type defined in "databases").
 
   from_ddl
   to_ddl

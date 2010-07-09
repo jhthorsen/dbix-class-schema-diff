@@ -26,7 +26,7 @@ with qw/ MooseX::Getopt::Dashes /;
 
 MooseX::Getopt::OptionTypeMap->add_option_type_to_map(Source, '=s');
 
-has '+error' => (
+has '+errstr' => (
     traits => ['NoGetopt'],
 );
 
@@ -97,13 +97,13 @@ sub run {
                 printf "Wrote %s: %s\n", $action, $self->$action->filename($self->output);
             }
         }
-        elsif($self->error) {
-            print "Unknown error!\n";
-            return 255;
+        elsif($self->errstr) {
+            print $self->errstr, "\n";
+            return 1;
         }
         else {
-            print $self->error, "\n";
-            return 1;
+            print "Unknown error!\n";
+            return 255;
         }
     }
 
