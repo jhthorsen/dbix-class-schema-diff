@@ -26,12 +26,36 @@ with qw/ MooseX::Getopt::Dashes /;
 
 MooseX::Getopt::OptionTypeMap->add_option_type_to_map(Source, '=s');
 
-has '+error' => ( traits => ['NoGetopt'] );
-has 'output' => (
+has '+error' => (
+    traits => ['NoGetopt'],
+);
+
+has write_to => (
+    is => 'ro',
+    isa => 'Bool',
+    default => 0,
+    documentation => 'Write "to" schema to disk',
+);
+
+has write_from => (
+    is => 'ro',
+    isa => 'Bool',
+    default => 0,
+    documentation => 'Write "from" schema to disk',
+);
+
+has write_diff => (
+    is => 'ro',
+    isa => 'Bool',
+    default => 1,
+    documentation => 'Write "diff" to disk (--no-write-diff to disable)',
+);
+
+has output => (
     is => 'ro',
     isa => 'Str',
     default => '.',
-    documentation => 'Where to output SQL to',
+    documentation => 'Where to output SQL to ("-" = STDOUT)',
 );
 
 =head1 METHODS
@@ -44,9 +68,36 @@ Used to start the program from a perl script.
 
 sub run {
     my $self = shift;
+    my $output = $self->output;
 
-    unless($self->create_ddl_dir($self->output)) {
-        if($self->error) {
+    if(!$self->from or !$self->to) {
+        print STDERR "--from and --to is required\n";
+        exit 2;
+    }
+
+    if($output eq '-') {
+        my $buf = '';
+        $output = \$buf;
+    }
+
+    for my $action (qw/to from diff/) {
+        my $write = 'write_' .$action;
+        my $method = $action. '_ddl';
+
+        next unless($self->$write);
+
+        if($self->$method($output)) {
+            if(ref $output eq 'SCALAR') {
+                print $$output;
+            }
+            elsif($action eq 'diff') {
+                printf "Wrote diff: %s\n", $self->to->filename($self->output, $self->from->version);
+            }
+            else {
+                printf "Wrote %s: %s\n", $action, $self->$action->filename($self->output);
+            }
+        }
+        elsif($self->error) {
             print "Unknown error!\n";
             return 255;
         }
@@ -56,10 +107,6 @@ sub run {
         }
     }
 
-    print "\nDiff was generated:\n";
-    printf " * From: %s\n", $self->to->filename($self->output);
-    printf " * To:   %s\n", $self->from->filename($self->output);
-    printf " * Diff: %s\n", $self->to->filename($self->output, $self->from->version);
     print "\n";
 
     return 0;
