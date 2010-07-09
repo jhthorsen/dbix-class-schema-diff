@@ -37,6 +37,7 @@ use DBIx::Class::Schema::Loader ();
 use DBIx::Class::Schema::Diff::Source; 
 use MooseX::Types::Moose ':all';
 use MooseX::Types -declare => [qw/ Source /];
+use Scalar::Util qw/blessed/;
 
 my $generated = 0;
 sub _generate_classname { 'GEN' .(++$generated) .'::Schema' }
@@ -79,6 +80,21 @@ coerce Source, (
     },
     from HashRef, via {
         return DBIx::Class::Schema::Diff::Source->new($_);
+    },
+    from Object, via {
+        my $dbh = $_;
+        my $class = _generate_classname;
+
+        unless(blessed $dbh eq 'DBI::db') {
+            return $dbh;
+        }
+
+        DBIx::Class::Schema::Loader::make_schema_at($class,
+            { naming => 'v7', preserve_case => 1 },
+            [ sub { $dbh } ],
+        );
+
+        return DBIx::Class::Schema::Diff::Source->new(class => $class);
     },
 );
 
