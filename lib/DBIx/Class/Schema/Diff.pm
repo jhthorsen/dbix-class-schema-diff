@@ -18,6 +18,8 @@ DBIx::Class::Schema::Diff - Diff two schemas, regardless of version numbers
 
 =head1 SYNOPSIS
 
+From a module:
+
     use DBIx::Class::Schema::Diff;
 
     my $diff = DBIx::Class::Schema::Diff->new(
@@ -30,6 +32,16 @@ DBIx::Class::Schema::Diff - Diff two schemas, regardless of version numbers
     $diff->diff_ddl($directory) or die $diff->errstr;
     $diff->to_ddl($directory) or die $diff->errstr;
     $diff->from_ddl($directory) or die $diff->errstr;
+
+Using the script:
+
+    $ schema-diff.pl \
+        --from 'DBI:SQLite:t/db/one.sqlite' \
+        --to 'dbi:Pg:dbname=somedatabase&user&pass' \
+        --write-from \
+        --write-to \
+        --output - \
+        ;
 
 =cut
 
