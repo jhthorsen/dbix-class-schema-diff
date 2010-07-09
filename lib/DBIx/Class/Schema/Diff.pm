@@ -33,7 +33,6 @@ DBIx::Class::Schema::Diff - Diff two schemas, regardless of version numbers
 
 =cut
 
-use File::Temp ();
 use DBIx::Class;
 use SQL::Translator::Diff;
 use DBIx::Class::Schema::Diff::Types qw/ Source /;
@@ -133,16 +132,10 @@ sub diff_ddl {
         SOURCE:
         for my $source ($from, $to) {
             my $old_producer = $source->producer;
-            push @tmp_files, File::Temp->new;
 
             $source->producer($db);
             $source->reset;
-
-            unless($source->schema_to_file($tmp_files[-1])) {
-                $self->_set_errstr($source->errstr);
-                return;
-            }
-
+            $source->translate;
             $source->producer($old_producer);
         }
 
