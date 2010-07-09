@@ -21,8 +21,10 @@ SYNOPSIS
                         databases => ['SQLite'],
                     );
 
-        # write diff to disk
-        $diff->create_ddl_dir($path);
+        # write "diff", "to" and "from" to disk
+        $diff->diff_ddl($directory) or die $diff->error;
+        $diff->to_ddl($directory) or die $diff->error;
+        $diff->from_ddl($directory) or die $diff->error;
 
 ATTRIBUTES
   from
@@ -40,9 +42,32 @@ ATTRIBUTES
     Holds the last error.
 
 METHODS
-  create_ddl_dir
-    Will write the diff between "from" and "to" to a selected directory -
-    one file per table.
+  diff_ddl
+        $bool = $self->diff_ddl($directory, \%args);
+        $bool = $self->diff_ddl(\$text, \%args);
+
+    Will write the diff (one file per each type in "databases") between
+    "from" and "to" to a selected $directory. %args is passed on to
+    SQL::Translator::Diff::new(), but "output_db", "source_schema" and
+    "target_schema" is set by this method.
+
+    Will write DDL to $text if it is given as a scalar reference. (This
+    might not make much sense, if you have more than one type defined in
+    "databases".
+
+  from_ddl
+  to_ddl
+        $bool = $self->from_ddl($directory);
+        $bool = $self->from_ddl(\$text);
+        $bool = $self->to_ddl($directory);
+        $bool = $self->to_ddl(\$text);
+
+    Will write "from" or "to" schemas as DDL to the given directory, with
+    all the languages defined in "databases".
+
+    Will write DDL to $text if it is given as a scalar reference. (This
+    might not make much sense, if you have more than one type defined in
+    "databases".
 
 COPYRIGHT & LICENSE
     This library is free software. You can redistribute it and/or modify it
